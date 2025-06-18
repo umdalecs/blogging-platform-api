@@ -20,7 +20,7 @@ func main() {
 		ParseTime:            true,
 	})
 
-	s := api.NewApiServer(config.Envs.ServerAddr, db)
+	s := api.NewApiServer(":8080", db)
 
 	if err := s.Run(); err != nil {
 		log.Fatal(err)
