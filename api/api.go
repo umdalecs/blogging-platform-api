@@ -22,9 +22,6 @@ func NewApiServer(addr string, db *sql.DB) *ApiServer {
 
 func (s *ApiServer) Run() error {
 	v1 := http.NewServeMux()
-	v1.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("hello world"))
-	})
 
 	postRepository := post.NewPostRepository(s.Db)
 	postHandler := post.NewPostHandler(postRepository)
