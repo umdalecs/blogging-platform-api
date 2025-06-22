@@ -20,6 +20,7 @@ WORKDIR /root/
 
 COPY --from=build /src .
 
+ENV GIN_MODE=release
 ENV PG_DB_USER=
 ENV PG_DB_PASS=
 ENV PG_DB_NAME=
