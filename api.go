@@ -1,60 +1,30 @@
 package main
 
 import (
-	"database/sql"
-	"encoding/json"
-	"log"
-	"net/http"
+	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type ApiServer struct {
-	Addr string
-	Db   *sql.DB
+	addr string
+	db   *pgxpool.Pool
 }
 
-func NewApiServer(addr string, db *sql.DB) *ApiServer {
+func NewApiServer(addr string, db *pgxpool.Pool) *ApiServer {
 	return &ApiServer{
-		Addr: addr,
-		Db:   db,
+		addr: addr,
+		db:   db,
 	}
 }
 
 func (s *ApiServer) Run() error {
-	v1 := http.NewServeMux()
+	e := gin.Default()
 
-	postRepository := NewPostRepository(s.Db)
+	v1 := e.Group("/api/v1")
+
+	postRepository := NewPostRepository(s.db)
 	postHandler := NewPostHandler(postRepository)
 	postHandler.RegisterRoutes(v1)
 
-	r := http.NewServeMux()
-	r.Handle("/api/v1/", http.StripPrefix("/api/v1", v1))
-
-	mc := MiddlewareChain(
-		LoggerMiddleware,
-	)
-
-	server := &http.Server{
-		Addr:    s.Addr,
-		Handler: mc(r),
-	}
-
-	log.Printf("Server listening port %s", s.Addr)
-	return server.ListenAndServe()
-}
-
-func WriteJson(w http.ResponseWriter, statusCode int, payload any) {
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(payload)
-}
-
-func WriteJsonErr(w http.ResponseWriter, statusCode int, err error) {
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
-}
-
-func WriteEmpty(w http.ResponseWriter, statusCode int) {
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
+	return e.Run(s.addr)
 }

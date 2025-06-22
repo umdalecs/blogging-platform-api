@@ -1,122 +1,119 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type PostHandler struct {
-	Repo *PostRepository
+	repo *PostRepository
 }
 
 func NewPostHandler(repo *PostRepository) *PostHandler {
-	return &PostHandler{Repo: repo}
+	return &PostHandler{repo: repo}
 }
 
-func (h *PostHandler) RegisterRoutes(m *http.ServeMux) {
-	m.HandleFunc("POST /posts/", h.createBlogPost)
-	m.HandleFunc("POST /posts", h.createBlogPost) // fallback for no final slash
-	m.HandleFunc("PUT /posts/{id}", h.updateBlogPost)
-	m.HandleFunc("DELETE /posts/{id}", h.deleteBlogPost)
-	m.HandleFunc("GET /posts/", h.getBlogPost)
-	m.HandleFunc("GET /posts", h.getBlogPost) // fallback for no final slash
-	m.HandleFunc("GET /posts/{id}", h.getBlogPostById)
+func (h *PostHandler) RegisterRoutes(r *gin.RouterGroup) {
+	r.POST("/posts", h.createBlogPost)
+	r.PUT("/posts/:id", h.updateBlogPost)
+	r.DELETE("/posts/:id", h.deleteBlogPost)
+	r.GET("/posts", h.getBlogPost)
+	r.GET("/posts/:id", h.getBlogPostById)
 }
 
-func (h *PostHandler) createBlogPost(w http.ResponseWriter, r *http.Request) {
+func (h *PostHandler) createBlogPost(c *gin.Context) {
 	var payload PostDto
-	err := json.NewDecoder(r.Body).Decode(&payload)
-	if err != nil {
-		WriteJsonErr(w, http.StatusBadRequest, fmt.Errorf("invalid body content"))
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body content"})
 		return
 	}
 
-	post, err := h.Repo.CreatePost(payload)
-	if err != nil {
-		WriteJsonErr(w, http.StatusInternalServerError, fmt.Errorf("error storing post"))
+	var post Post
+	if err := h.repo.CreatePost(payload, &post); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	WriteJson(w, http.StatusCreated, post)
+	c.JSON(http.StatusCreated, post)
 }
 
-func (h *PostHandler) updateBlogPost(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+func (h *PostHandler) updateBlogPost(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		WriteJsonErr(w, http.StatusBadRequest, fmt.Errorf("id must be an integer"))
+		c.JSON(http.StatusBadRequest, gin.H{"error": "id must be an integer"})
 		return
 	}
 	var payload PostDto
-	err = json.NewDecoder(r.Body).Decode(&payload)
-	if err != nil {
-		WriteJsonErr(w, http.StatusBadRequest, fmt.Errorf("invalid body content"))
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body content"})
 		return
 	}
 
-	post, err := h.Repo.UpdatePost(id, payload)
-	if err != nil {
-		WriteJsonErr(w, http.StatusInternalServerError, fmt.Errorf("error updating post"))
+	var post Post
+	if err := h.repo.UpdatePost(id, payload, &post); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "error updating post"})
 		return
 	}
 
 	if post.ID == 0 {
-		WriteJsonErr(w, http.StatusNotFound, fmt.Errorf("post not found"))
+		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
 		return
 	}
 
-	WriteJson(w, http.StatusOK, post)
+	c.JSON(http.StatusOK, post)
 }
 
-func (h *PostHandler) deleteBlogPost(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+func (h *PostHandler) deleteBlogPost(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		WriteJsonErr(w, http.StatusBadRequest, fmt.Errorf("id must be an integer"))
+		c.JSON(http.StatusBadRequest, gin.H{"error": "id must be an integer"})
 		return
 	}
 
-	ok, err := h.Repo.DeletePost(id)
+	ok, err := h.repo.DeletePost(id)
 	if err != nil {
-		WriteJsonErr(w, http.StatusInternalServerError, fmt.Errorf("error deleting post"))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "error deleting post"})
 		return
 	}
 
 	if !ok {
-		WriteJsonErr(w, http.StatusNotFound, fmt.Errorf("post not found"))
+		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
 		return
 	}
 
-	WriteEmpty(w, http.StatusNoContent)
+	c.Status(http.StatusNoContent)
 }
 
-func (h *PostHandler) getBlogPost(w http.ResponseWriter, r *http.Request) {
-	queryTerm := r.URL.Query().Get("term")
-	posts, err := h.Repo.GetPosts(queryTerm)
-	if err != nil {
-		WriteJsonErr(w, http.StatusInternalServerError, fmt.Errorf("error searching posts"))
+func (h *PostHandler) getBlogPost(c *gin.Context) {
+	queryTerm := c.Query("term")
+	posts := []Post{}
+	if err := h.repo.GetPosts(queryTerm, &posts); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	WriteJson(w, http.StatusOK, posts)
+
+	c.JSON(http.StatusOK, posts)
 }
 
-func (h *PostHandler) getBlogPostById(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+func (h *PostHandler) getBlogPostById(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		WriteJsonErr(w, http.StatusBadRequest, fmt.Errorf("id must be an integer"))
+		c.JSON(http.StatusBadRequest, gin.H{"error": "id must be an integer"})
 		return
 	}
 
-	post, err := h.Repo.GetPostById(id)
-	if err != nil {
-		WriteJsonErr(w, http.StatusInternalServerError, fmt.Errorf("error searching post"))
+	var post Post
+	if err := h.repo.GetPostById(id, &post); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "error searching post"})
 		return
 	}
 
 	if post.ID == 0 {
-		WriteEmpty(w, http.StatusNotFound)
+		c.Status(http.StatusNotFound)
 		return
 	}
 
-	WriteJson(w, http.StatusOK, post)
+	c.JSON(http.StatusOK, post)
 }

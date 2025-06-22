@@ -4,7 +4,7 @@ This is my golang solution to https://roadmap.sh/projects/blogging-platform-api.
 
 ## Features
 
-- *Mysql Storage*: The app stores posts in mysql database
+- *Postgres Storage*: The app stores posts in postgresql database
 - *Search filter*: You can easily filter posts using query params
 
 ## Running application
@@ -29,7 +29,7 @@ cp .env.example .env
 ```
 
 > [!Note]
-> This proyect depends on mysql storage and database should be initialized
+> This proyect depends on postgres storage and database should be initialized
 > using the posts ddl at `./database_files/posts.sql`
 
 ### 4. Build and run the application
@@ -53,25 +53,25 @@ curl http://localhost:8080/api/v1/posts/{id}
 
 ### Create
 ```bash
-curl -X POST http://localhost:8080/api/v1/posts -d\
+curl -X POST http://localhost:8080/api/v1/posts \
 -H "Content-Type: application/json" \
-'{\
-  "title": "My First Blog Post",\
-  "content": "This is the content of my first blog post.",\
-  "category": "Technology",\
-  "tags": ["Tech", "Programming"]\
+-d '{
+  "title": "My First Blog Post",
+  "content": "This is the content of my first blog post.",
+  "category": "Technology",
+  "tags": ["Tech", "Programming"]
 }'
 ```
 
 ### Update
 ```bash
-curl -X PUT http://localhost:8080/api/v1/posts/{id} -d\
+curl -X PUT http://localhost:8080/api/v1/posts/{id} \
 -H "Content-Type: application/json" \
-'{\
-  "title": "My Updated Blog Post",\
-  "content": "This is the updated content of my first blog post.",\
-  "category": "Technology",\
-  "tags": ["Tech", "Programming"]\
+-d '{\
+  "title": "My Updated Blog Post",
+  "content": "This is the updated content of my first blog post.",
+  "category": "Technology",
+  "tags": ["Tech", "Programming"]
 }'
 ```
 
