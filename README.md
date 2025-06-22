@@ -1,6 +1,6 @@
 # Go net/http Blogging Platform API
 
-This is my golang solution to [Blogging platform api](https://roadmap.sh/projects/blogging-platform-api), i tried to minimize dependencies using only the `net/http` standard library.
+This is my golang solution to https://roadmap.sh/projects/blogging-platform-api.
 
 ## Features
 
@@ -24,12 +24,12 @@ go mod tidy
 
 ### 3. Environment variables
 
-I hardcoded some default values in `config/configuration.go` file but
-can be easily overriden copying the .env example and populating it with your data
-
 ```bash
 cp .env.example .env
 ```
+
+> [!Note]
+> Don't forget, this proyect depends on mysql storage and database should be initialized
 
 ### 4. Build and run the application
 
@@ -38,17 +38,43 @@ go build -o out/blogging-platform-api ./cmd
 ./out/blogging-platform-api
 ```
 
-## Docker
+## Usage
 
-With the dockerfile you can just type 
+### Get posts
 ```bash
-docker build -t blogging-platform .
+curl http://localhost:8080/api/v1/posts?term=
 ```
 
-and then run the proyect using
+### Get single post
 ```bash
-docker run --env-file ./.env --name my-container blogging-platform
+curl http://localhost:8080/api/v1/posts/{id}
 ```
 
-> [!Note]
-> Don't forget, this proyect depends on mysql storage and database should be initialized
+### Create
+```bash
+curl -X POST http://localhost:8080/api/v1/posts -d\
+-H "Content-Type: application/json" \
+'{\
+  "title": "My First Blog Post",\
+  "content": "This is the content of my first blog post.",\
+  "category": "Technology",\
+  "tags": ["Tech", "Programming"]\
+}'
+```
+
+### Update
+```bash
+curl -X PUT http://localhost:8080/api/v1/posts/{id} -d\
+-H "Content-Type: application/json" \
+'{\
+  "title": "My Updated Blog Post",\
+  "content": "This is the updated content of my first blog post.",\
+  "category": "Technology",\
+  "tags": ["Tech", "Programming"]\
+}'
+```
+
+### Delete
+```bash
+curl -X DELETE http://localhost:8080/api/v1/posts/{id}
+```
