@@ -35,7 +35,7 @@ cp .env.example .env
 ### 4. Build and run the application
 
 ```bash
-go build -o out/blogging-platform-api ./cmd
+go build -o out/ .
 ./out/blogging-platform-api
 ```
 

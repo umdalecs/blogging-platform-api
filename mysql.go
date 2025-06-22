@@ -1,13 +1,13 @@
-package db
+package main
 
 import (
 	"database/sql"
 	"log"
 
-	mysqlDrv "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 )
 
-func InitMysqlDB(cfg mysqlDrv.Config) *sql.DB {
+func InitMysqlDB(cfg mysql.Config) *sql.DB {
 	db, err := sql.Open("mysql", cfg.FormatDSN())
 	if err != nil {
 		log.Fatal(err)
