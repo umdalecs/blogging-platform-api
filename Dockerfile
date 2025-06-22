@@ -12,7 +12,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o blogging-platform-api ./cmd
+RUN go build -o blogging-platform-api .
 
 FROM docker.io/library/alpine:latest
 

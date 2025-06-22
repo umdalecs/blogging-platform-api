@@ -1,4 +1,4 @@
-# Go net/http Blogging Platform API
+# Golang Blogging Platform API
 
 This is my golang solution to https://roadmap.sh/projects/blogging-platform-api.
 
