@@ -29,7 +29,8 @@ cp .env.example .env
 ```
 
 > [!Note]
-> Don't forget, this proyect depends on mysql storage and database should be initialized
+> This proyect depends on mysql storage and database should be initialized
+> using the posts ddl at `./database_files/posts.sql`
 
 ### 4. Build and run the application
 
