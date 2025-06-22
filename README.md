@@ -19,7 +19,7 @@ cd blogging-platform-api
 ### 2. Install dependencies
 
 ```bash
-go mod tidy
+go mod download
 ```
 
 ### 3. Environment variables
