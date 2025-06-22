@@ -18,9 +18,9 @@ func initConfig() *Configuration {
 	godotenv.Load()
 
 	return &Configuration{
-		DbUser:     utils.LoadEnv("MYSQL_DB_USER", "root"),
-		DbPassw:    utils.LoadEnv("MYSQL_DB_PASSWD", "root"),
-		DbName:     utils.LoadEnv("MYSQL_DB_NAME", "bloggingPlatform"),
-		DbAddr:     utils.LoadEnv("MYSQL_DB_ADDR", "127.0.0.1:3306"),
+		DbUser:  utils.LoadEnv("MYSQL_DB_USER"),
+		DbPassw: utils.LoadEnv("MYSQL_DB_PASSWD"),
+		DbName:  utils.LoadEnv("MYSQL_DB_NAME"),
+		DbAddr:  utils.LoadEnv("MYSQL_DB_ADDR"),
 	}
 }
