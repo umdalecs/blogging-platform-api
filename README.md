@@ -67,7 +67,7 @@ curl -X POST http://localhost:8080/api/v1/posts \
 ```bash
 curl -X PUT http://localhost:8080/api/v1/posts/{id} \
 -H "Content-Type: application/json" \
--d '{\
+-d '{
   "title": "My Updated Blog Post",
   "content": "This is the updated content of my first blog post.",
   "category": "Technology",
